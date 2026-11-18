@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tọa Đàm 20/11 – Ngày Nhà Giáo Việt Nam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Lora:ital,wght@0,400;1,400;1,600&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gdk:#184e34; --gmd:#2d9a62; --teal:#248277;
+  --txt:#1f5238; --bg:#d5f0e1;
+  --phuong:#e63946; --phuong-dk:#b51726;
+}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  font-family:'Be Vietnam Pro',sans-serif;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%,#daf4e8 0%,transparent 65%),
+    radial-gradient(ellipse 55% 50% at 10% 20%,#c5ecd5 0%,transparent 55%),
+    radial-gradient(ellipse 55% 50% at 90% 18%,#c8edd7 0%,transparent 55%),
+    radial-gradient(ellipse 60% 55% at 10% 85%,#c0e8d2 0%,transparent 52%),
+    radial-gradient(ellipse 55% 50% at 90% 85%,#c4ead4 0%,transparent 52%),
+    linear-gradient(145deg,#dbf5e9 0%,#c3e8d3 50%,#b5dec8 100%);
+  display:flex; align-items:center; justify-content:center;
+  min-height:100vh; position:relative;
+}
+
+/* ── CANVASES ─────────────────────────────── */
+#particleCanvas,#petalCanvas{position:fixed;inset:0;pointer-events:none}
+#particleCanvas{z-index:1} #petalCanvas{z-index:2}
+
+/* ── BOTTOM CONTROLS (GÓC DƯỚI TAY PHẢI) ────── */
+.bottom-actions{
+  position:fixed;bottom:20px;right:22px;z-index:300;
+  display:flex;align-items:center;gap:10px;
+}
+
+/* Volume hover group */
+.vol-group{
+  display:flex;align-items:center;
+  height:42px;border-radius:100px;
+  background:rgba(255,255,255,.5);
+  backdrop-filter:blur(12px);
+  border:1.5px solid rgba(45,154,98,.45);
+  box-shadow:0 4px 15px rgba(24,78,52,.12);
+  padding:0 4px 0 5px;
+  transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vol-group:hover, .vol-group:focus-within{
+  background:rgba(255,255,255,.85);
+  border-color:#2d9a62;
+  box-shadow:0 4px 18px rgba(24,78,52,.18);
+}
+.vol-btn{
+  width:32px;height:32px;border-radius:50%;
+  background:transparent;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:#184e34;flex-shrink:0;padding:0;
+  transition:transform .2s ease;
+}
+.vol-btn:hover{transform:scale(1.1)}
+.vol-btn svg{width:18px;height:18px;display:block}
+
+/* Slider slides out smoothly on hover */
+.vol-expand{
+  display:flex;align-items:center;gap:6px;
+  max-width:0;opacity:0;
+  overflow:hidden;pointer-events:none;
+  transition:max-width .35s ease, opacity .25s ease, margin .35s ease;
+  margin-left:0;white-space:nowrap;
+}
+.vol-group:hover .vol-expand,
+.vol-group:focus-within .vol-expand{
+  max-width:140px;opacity:1;pointer-events:auto;
+  margin-left:6px;padding-right:6px;
+}
+.vol-slider{
+  -webkit-appearance:none;appearance:none;
+  width:75px;height:4px;border-radius:2px;
+  background:rgba(45,154,98,0.3);
+  outline:none;cursor:pointer;
+}
+.vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:13px;height:13px;border-radius:50%;
+  background:#2d9a62;cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,0.25);
+  transition:transform .15s ease;
+}
+.vol-slider::-webkit-slider-thumb:hover{transform:scale(1.25)}
+.vol-slider::-moz-range-thumb{
+  width:13px;height:13px;border-radius:50%;
+  background:#2d9a62;cursor:pointer;border:none;
+}
+.vol-text{font-size:0.68rem;font-weight:600;color:#184e34;min-width:28px;text-align:right}
+
+/* Action buttons */
+.ctrl-btn{
+  width:42px;height:42px;border-radius:50%;
+  border:1.5px solid rgba(45,154,98,.45);
+  background:rgba(255,255,255,.5);backdrop-filter:blur(12px);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .25s ease;
+  box-shadow:0 4px 15px rgba(24,78,52,.12);
+  color:#184e34;
+}
+.ctrl-btn:hover{background:rgba(255,255,255,.85);transform:scale(1.08);border-color:#2d9a62}
+.ctrl-btn svg{width:18px;height:18px;display:block}
+
+/* Music wave indicator */
+.music-wave{display:none;align-items:flex-end;gap:2.5px;height:15px}
+.music-wave span{
+  width:2.5px;background:#2d9a62;border-radius:2px;
+  animation:wave 1.2s ease-in-out infinite;
+}
+.music-wave span:nth-child(1){height:8px;animation-delay:0s}
+.music-wave span:nth-child(2){height:15px;animation-delay:.2s}
+.music-wave span:nth-child(3){height:10px;animation-delay:.4s}
+.ctrl-btn.playing .music-icon{display:none}
+.ctrl-btn.playing .music-wave{display:flex}
+@keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1.2)}}
+
+/* ── FIXED FLORALS ───────────────────────── */
+.fl{position:fixed;pointer-events:none;z-index:5}
+
+/* Corners */
+.fl-tl{top:0;left:0;transform-origin:top left;animation:swTL 7s ease-in-out infinite}
+.fl-tr{top:0;right:0;transform-origin:top right;animation:swTR 7s ease-in-out infinite;animation-delay:-2.5s}
+.fl-bl{bottom:0;left:0;transform-origin:bottom left;animation:swBL 7s ease-in-out infinite;animation-delay:-4.5s}
+.fl-br{bottom:0;right:0;transform-origin:bottom right;animation:swBR 7s ease-in-out infinite;animation-delay:-1.2s}
+
+/* BIG SIDE BRANCHES (Reaching inward toward center title) */
+.fl-side-l{
+  top:50%;left:0;transform:translateY(-50%);
+  transform-origin:left center;
+  animation:swSideL 8s ease-in-out infinite;
+  width:clamp(290px,27vw,450px);
+}
+.fl-side-r{
+  top:50%;right:0;transform:translateY(-50%);
+  transform-origin:right center;
+  animation:swSideR 8s ease-in-out infinite;
+  animation-delay:-3s;
+  width:clamp(290px,27vw,450px);
+}
+
+/* 4 CÀNH HOA MỚI BỔ SUNG (LẤP ĐẦY CÁC GÓC TRỐNG) */
+/* Cành trên trái (Top-left diagonal) */
+.fl-branch-tl{
+  top:2%;left:16%;
+  transform-origin:top left;
+  animation:swDiagTL 8.5s ease-in-out infinite;
+  width:clamp(180px,16vw,260px);
+}
+/* Cành trên phải (Top-right diagonal) */
+.fl-branch-tr{
+  top:2%;right:16%;
+  transform-origin:top right;
+  animation:swDiagTR 8.5s ease-in-out infinite;
+  animation-delay:-2s;
+  width:clamp(180px,16vw,260px);
+}
+/* Cành dưới trái (Bottom-left diagonal) */
+.fl-branch-bl{
+  bottom:8%;left:17%;
+  transform-origin:bottom left;
+  animation:swDiagBL 9s ease-in-out infinite;
+  animation-delay:-3.5s;
+  width:clamp(190px,17vw,270px);
+}
+/* Cành dưới phải (Bottom-right diagonal) */
+.fl-branch-br{
+  bottom:8%;right:17%;
+  transform-origin:bottom right;
+  animation:swDiagBR 9s ease-in-out infinite;
+  animation-delay:-1.5s;
+  width:clamp(190px,17vw,270px);
+}
+
+/* Bottom floral carpet */
+.fl-bot{
+  bottom:0;left:50%;transform:translateX(-50%);
+  transform-origin:bottom center;
+  animation:swBC 8s ease-in-out infinite;
+  animation-delay:-2s;
+  width:100vw;max-width:1600px;
+}
+
+@keyframes swTL{0%,100%{transform:rotate(0)}40%{transform:rotate(2deg)}75%{transform:rotate(-1.3deg)}}
+@keyframes swTR{0%,100%{transform:rotate(0)}40%{transform:rotate(-2deg)}75%{transform:rotate(1.3deg)}}
+@keyframes swBL{0%,100%{transform:scaleY(-1) rotate(0)}40%{transform:scaleY(-1) rotate(-2deg)}75%{transform:scaleY(-1) rotate(1.3deg)}}
+@keyframes swBR{0%,100%{transform:scale(-1,-1) rotate(0)}40%{transform:scale(-1,-1) rotate(-2deg)}75%{transform:scale(-1,-1) rotate(1.3deg)}}
+@keyframes swSideL{0%,100%{transform:translateY(-50%) rotate(0)}50%{transform:translateY(-52%) rotate(2.2deg)}}
+@keyframes swSideR{0%,100%{transform:translateY(-50%) rotate(0)}50%{transform:translateY(-52%) rotate(-2.2deg)}}
+@keyframes swDiagTL{0%,100%{transform:rotate(0)}50%{transform:rotate(2.5deg) translateY(-4px)}}
+@keyframes swDiagTR{0%,100%{transform:rotate(0)}50%{transform:rotate(-2.5deg) translateY(-4px)}}
+@keyframes swDiagBL{0%,100%{transform:rotate(0)}50%{transform:rotate(-2.5deg) translateY(4px)}}
+@keyframes swDiagBR{0%,100%{transform:rotate(0)}50%{transform:rotate(2.5deg) translateY(4px)}}
+@keyframes swBC{0%,100%{transform:translateX(-50%) rotate(0)}50%{transform:translateX(-50%) rotate(.8deg)}}
+
+/* ── SPARKLES ─────────────────────────────── */
+.sp{position:fixed;border-radius:50%;pointer-events:none;z-index:4;animation:spk 3.5s ease-in-out infinite}
+@keyframes spk{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
+
+/* ── CENTER CONTENT ───────────────────────── */
+.center{
+  position:relative;z-index:20;text-align:center;
+  max-width:min(660px,84vw);width:100%;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;
+  animation:fadeIn 1.3s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* Warm halo behind center */
+.center::before{
+  content:'';position:absolute;top:40%;left:50%;
+  transform:translate(-50%,-50%);
+  width:min(580px,80vw);height:min(380px,55vh);
+  background:radial-gradient(ellipse at center, rgba(255,255,255,0.45) 0%, rgba(220,248,230,0.3) 50%, transparent 75%);
+  pointer-events:none;z-index:-1;filter:blur(24px);
+}
+
+/* Badge – plain text, no box */
+.badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:.68rem;font-weight:600;
+  letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gdk);
+  margin-bottom:4px;
+  animation:up .9s .15s ease both;
+}
+.badge .dot{width:4.5px;height:4.5px;border-radius:50%;background:#2d9a62;animation:blink 2.2s infinite}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* Crown */
+.crown{margin-bottom:2px;animation:up .9s .3s ease both}
+.crown svg{width:clamp(190px,46%,340px);animation:fl 5s ease-in-out infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* Ornament */
+.ornament{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;animation:up .9s .4s ease both}
+.orn-line{flex:1;max-width:75px;height:1px;background:linear-gradient(90deg,transparent,rgba(45,154,98,.45),transparent)}
+.orn-sym{color:#2d9a62;font-size:.55rem;letter-spacing:5px}
+
+/* Title */
+.title-wrap{animation:up .9s .55s ease both}
+.t-main{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.8rem,8.5vw,5.2rem);
+  font-weight:700;line-height:1.0;letter-spacing:.05em;
+  background:linear-gradient(135deg,#13432b 0%,#2d9a62 42%,#1b7446 72%,#0f3924 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:glow 4s 2s ease-in-out infinite;
+}
+@keyframes glow{
+  0%,100%{filter:drop-shadow(0 2px 10px rgba(29,100,65,.25))}
+  50%{filter:drop-shadow(0 2px 24px rgba(29,100,65,.55))}
+}
+.t-date{
+  display:block;font-family:'Lora',serif;
+  font-size:clamp(1.75rem,6vw,3.6rem);
+  font-style:italic;font-weight:400;letter-spacing:.08em;
+  background:linear-gradient(135deg,#248277 0%,#3ec9a7 50%,#248277 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 2px 8px rgba(36,130,119,.35));
+}
+
+/* Divider */
+.divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0;animation:up .9s .7s ease both}
+.div-line{flex:1;max-width:55px;height:1px;background:linear-gradient(90deg,transparent,rgba(36,130,119,.45),transparent)}
+
+/* Subtitle */
+.subtitle{
+  font-family:'Lora',serif;font-style:italic;
+  font-size:clamp(.82rem,1.85vw,1.05rem);
+  color:var(--txt);line-height:1.75;
+  max-width:440px;
+  animation:up .9s .85s ease both;
+}
+
+/* Scene */
+.scene{display:flex;align-items:flex-end;justify-content:center;margin-top:4px;animation:up .9s 1s ease both}
+
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+@media(max-width:768px){
+  .fl-side-l,.fl-side-r{width:180px}
+  .bottom-actions{bottom:12px;right:14px;gap:6px}
+  .vol-slider{width:60px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="particleCanvas"></canvas>
+<canvas id="petalCanvas"></canvas>
+
+<!-- ═══ BOTTOM ACTIONS (GÓC DƯỚI TAY PHẢI) ═══ -->
+<div class="bottom-actions">
+  <!-- BỘ ĐIỀU KHIỂN ÂM LƯỢNG (RÊ CHUỘT MỚI HIỆN SLIDER) -->
+  <div class="vol-group" title="Âm lượng">
+    <button id="volBtn" class="vol-btn" aria-label="Bật/Tắt âm thanh">
+      <svg id="volIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>
+    </button>
+    <div class="vol-expand">
+      <input type="range" id="volSlider" class="vol-slider" min="0" max="1" step="0.01" value="0.8"/>
+      <span id="volText" class="vol-text">80%</span>
+    </div>
+  </div>
+
+  <!-- NÚT PHÁT NHẠC -->
+  <button id="musicBtn" class="ctrl-btn" title="Phát / Dừng Nhạc 20/11" aria-label="Phát / Dừng Nhạc">
+    <svg class="music-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+    </svg>
+    <div class="music-wave">
+      <span></span><span></span><span></span>
+    </div>
+  </button>
+
+  <!-- NÚT TOÀN MÀN HÌNH -->
+  <button id="fsBtn" class="ctrl-btn" title="Toàn màn hình" aria-label="Toàn màn hình">
+    <svg id="fsIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4"/>
+    </svg>
+  </button>
+</div>
+
+<!-- THẺ AUDIO CHÍNH (Tự động phát 2 bài mp3 người dùng cung cấp) -->
+<audio id="bgAudio" preload="auto"></audio>
+
+<!-- ═══════════════════════════════════════════
+     CORNER FLORALS (4 góc)
+═══════════════════════════════════════════ -->
+
+<!-- TL -->
+<div class="fl fl-tl"><svg width="380" height="380" viewBox="0 0 400 400" fill="none">
+  <path d="M14 395 Q58 320 46 215 Q38 138 76 60" stroke="#3d8858" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <path d="M48 215 Q95 178 138 188" stroke="#5aaa70" stroke-width="1.9" fill="none" stroke-linecap="round"/>
+  <path d="M58 160 Q106 122 150 132" stroke="#5aaa70" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="140" cy="186" rx="23" ry="9" fill="#7bbf94" opacity=".75" transform="rotate(-28 140 186)"/>
+  <ellipse cx="152" cy="130" rx="21" ry="8" fill="#5e9e72" opacity=".7" transform="rotate(-43 152 130)"/>
+  <g transform="translate(90,52)">
+    <circle cx="0" cy="0" r="25" fill="#e06878" opacity=".9"/>
+    <circle cx="0" cy="0" r="18" fill="#f08090" opacity=".85"/>
+    <circle cx="0" cy="0" r="6.5" fill="#b03858"/>
+  </g>
+  <g transform="translate(48,112)" opacity=".85">
+    <circle cx="0" cy="-15" r="8.5" fill="#90c8f0"/><circle cx="14" cy="-7" r="8.5" fill="#78b8e8"/>
+    <circle cx="14" cy="7" r="8.5" fill="#90c8f0"/><circle cx="0" cy="15" r="8.5" fill="#78b8e8"/>
+  </g>
+</svg></div>
+
+<!-- TR -->
+<div class="fl fl-tr"><svg width="380" height="380" viewBox="0 0 400 400" fill="none" style="transform:scaleX(-1)">
+  <path d="M14 395 Q58 320 46 215 Q38 138 76 60" stroke="#3d8858" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="140" cy="186" rx="23" ry="9" fill="#7bbf94" opacity=".75" transform="rotate(-28 140 186)"/>
+  <g transform="translate(90,52)">
+    <circle cx="0" cy="-26" r="10" fill="#f5c842"/><circle cx="18" cy="-19" r="10" fill="#f5c842"/>
+    <circle cx="26" cy="0" r="10" fill="#f5c842"/><circle cx="18" cy="19" r="10" fill="#f5c842"/>
+    <circle cx="0" cy="26" r="10" fill="#f5c842"/><circle cx="-18" cy="19" r="10" fill="#f5c842"/>
+    <circle cx="-26" cy="0" r="10" fill="#f5c842"/><circle cx="-18" cy="-19" r="10" fill="#f5c842"/>
+    <circle cx="0" cy="0" r="15" fill="#6a3800"/>
+  </g>
+</svg></div>
+
+<!-- BL -->
+<div class="fl fl-bl"><svg width="380" height="380" viewBox="0 0 400 400" fill="none" style="transform:scaleY(-1)">
+  <path d="M14 395 Q58 320 46 215 Q38 138 76 60" stroke="#3d8858" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="140" cy="186" rx="23" ry="9" fill="#7bbf94" opacity=".75" transform="rotate(-28 140 186)"/>
+  <g transform="translate(90,52)">
+    <circle cx="0" cy="0" r="25" fill="#f0a070" opacity=".88"/>
+    <circle cx="0" cy="0" r="6.5" fill="#b06030"/>
+  </g>
+</svg></div>
+
+<!-- BR -->
+<div class="fl fl-br"><svg width="380" height="380" viewBox="0 0 400 400" fill="none" style="transform:scale(-1,-1)">
+  <path d="M14 395 Q58 320 46 215 Q38 138 76 60" stroke="#3d8858" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="140" cy="186" rx="23" ry="9" fill="#7bbf94" opacity=".75" transform="rotate(-28 140 186)"/>
+  <g transform="translate(90,52)">
+    <circle cx="0" cy="0" r="25" fill="#60b878" opacity=".88"/>
+    <circle cx="0" cy="0" r="6.5" fill="#1e6040"/>
+  </g>
+</svg></div>
+
+<!-- ═══════════════════════════════════════════
+     4 CÀNH HOA MỚI BỔ SUNG (LẤP ĐẦY KHOẢNG TRỐNG)
+═══════════════════════════════════════════ -->
+
+<!-- 1. Cành trên - bên trái: Vươn xuống che chở phần trên bên trái -->
+<div class="fl fl-branch-tl">
+<svg viewBox="0 0 260 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 10 Q100 30 180 90 Q220 120 250 160" stroke="#38804e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M100 30 Q160 10 210 35" stroke="#4a9562" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <!-- Lá xanh mềm mại -->
+  <ellipse cx="80" cy="30" rx="15" ry="6" fill="#7bbf94" opacity=".7" transform="rotate(15 80 30)"/>
+  <ellipse cx="150" cy="65" rx="16" ry="6.5" fill="#5cb87a" opacity=".7" transform="rotate(35 150 65)"/>
+  <ellipse cx="200" cy="115" rx="15" ry="6" fill="#7bbf94" opacity=".7" transform="rotate(45 200 115)"/>
+  <!-- Hoa phượng đỏ trên cành -->
+  <g transform="translate(210, 35)">
+    <path d="M0 0 Q-10 -20 -24 -20 Q-16 -8 0 0" fill="#e63946"/>
+    <path d="M0 0 Q10 -20 24 -20 Q16 -8 0 0" fill="#e63946"/>
+    <path d="M0 0 Q-20 6 -24 20 Q-10 12 0 0" fill="#d90429"/>
+    <path d="M0 0 Q20 6 24 20 Q10 12 0 0" fill="#d90429"/>
+    <path d="M0 0 Q-8 -30 0 -38 Q8 -30 0 0" fill="#ffea79"/>
+    <circle cx="0" cy="-25" r="1.5" fill="#b51726"/>
+    <circle cx="0" cy="0" r="3.5" fill="#7a0d16"/>
+  </g>
+  <!-- Hoa cúc vàng đầu cành -->
+  <g transform="translate(245, 160)">
+    <circle cx="0" cy="-8" r="4.5" fill="#f5c842"/><circle cx="6" cy="-6" r="4.5" fill="#f5c842"/>
+    <circle cx="8" cy="0" r="4.5" fill="#f5c842"/><circle cx="6" cy="6" r="4.5" fill="#f5c842"/>
+    <circle cx="0" cy="8" r="4.5" fill="#f5c842"/><circle cx="-6" cy="6" r="4.5" fill="#f5c842"/>
+    <circle cx="-8" cy="0" r="4.5" fill="#f5c842"/><circle cx="-6" cy="-6" r="4.5" fill="#f5c842"/>
+    <circle cx="0" cy="0" r="5" fill="#6a3800"/>
+  </g>
+</svg>
+</div>
+
+<!-- 2. Cành trên - bên phải: Vươn xuống che chở phần trên bên phải -->
+<div class="fl fl-branch-tr">
+<svg viewBox="0 0 260 220" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
+  <path d="M10 10 Q100 30 180 90 Q220 120 250 160" stroke="#38804e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M100 30 Q160 10 210 35" stroke="#4a9562" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="80" cy="30" rx="15" ry="6" fill="#7bbf94" opacity=".7" transform="rotate(15 80 30)"/>
+  <ellipse cx="150" cy="65" rx="16" ry="6.5" fill="#5cb87a" opacity=".7" transform="rotate(35 150 65)"/>
+  <ellipse cx="200" cy="115" rx="15" ry="6" fill="#7bbf94" opacity=".7" transform="rotate(45 200 115)"/>
+  <!-- Hoa Sen hồng đài các -->
+  <g transform="translate(210, 35)">
+    <path d="M0 12 C-18 0 -28 -15 -24 -32 C-10 -25 0 -8 0 12Z" fill="#f28482"/>
+    <path d="M0 12 C18 0 28 -15 24 -32 C10 -25 0 -8 0 12Z" fill="#f28482"/>
+    <path d="M0 12 C-6 -15 -6 -35 0 -45 C6 -35 6 -15 0 12Z" fill="#fbc4c3"/>
+    <circle cx="0" cy="-5" r="5" fill="#ffd166"/>
+  </g>
+  <!-- Hoa hồng phấn đầu cành -->
+  <g transform="translate(245, 160)">
+    <circle cx="0" cy="0" r="14" fill="#f08090" opacity=".9"/>
+    <circle cx="0" cy="0" r="9" fill="#f8a0b0"/>
+    <circle cx="0" cy="0" r="3.5" fill="#b03858"/>
+  </g>
+</svg>
+</div>
+
+<!-- 3. Cành dưới - bên trái: Vươn lên về phía nhân vật bé tặng hoa -->
+<div class="fl fl-branch-bl">
+<svg viewBox="0 0 270 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M10 210 Q90 190 170 140 Q220 100 255 50" stroke="#38804e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M110 180 Q160 210 215 190" stroke="#4a9562" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="100" cy="180" rx="16" ry="6.5" fill="#7bbf94" opacity=".7" transform="rotate(-25 100 180)"/>
+  <ellipse cx="180" cy="120" rx="15" ry="6" fill="#5cb87a" opacity=".7" transform="rotate(-40 180 120)"/>
+  <!-- Hoa phượng vĩ đỏ cam -->
+  <g transform="translate(250, 50)">
+    <path d="M0 0 Q-12 -22 -26 -22 Q-18 -8 0 0" fill="#e63946"/>
+    <path d="M0 0 Q12 -22 26 -22 Q18 -8 0 0" fill="#e63946"/>
+    <path d="M0 0 Q-22 8 -26 22 Q-12 14 0 0" fill="#d90429"/>
+    <path d="M0 0 Q22 8 26 22 Q12 14 0 0" fill="#d90429"/>
+    <path d="M0 0 Q-10 -32 0 -42 Q10 -32 0 0" fill="#ffea79"/>
+    <circle cx="0" cy="-28" r="1.5" fill="#b51726"/>
+    <path d="M0 0 Q-6 -15 -12 -26" stroke="#b51726" stroke-width="1.2" fill="none"/>
+    <circle cx="-12" cy="-26" r="1.8" fill="#ffb703"/>
+    <circle cx="0" cy="0" r="3.5" fill="#7a0d16"/>
+  </g>
+  <!-- Hoa cẩm tú cầu tím học trò -->
+  <g transform="translate(210, 190)">
+    <circle cx="0" cy="-9" r="6" fill="#c8b0e8"/><circle cx="8" cy="-4" r="6" fill="#a48ad4"/>
+    <circle cx="8" cy="4" r="6" fill="#c8b0e8"/><circle cx="0" cy="9" r="6" fill="#a48ad4"/>
+    <circle cx="-8" cy="4" r="6" fill="#c8b0e8"/><circle cx="-8" cy="-4" r="6" fill="#a48ad4"/>
+  </g>
+</svg>
+</div>
+
+<!-- 4. Cành dưới - bên phải: Vươn lên về phía cô giáo -->
+<div class="fl fl-branch-br">
+<svg viewBox="0 0 270 230" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
+  <path d="M10 210 Q90 190 170 140 Q220 100 255 50" stroke="#38804e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M110 180 Q160 210 215 190" stroke="#4a9562" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <ellipse cx="100" cy="180" rx="16" ry="6.5" fill="#7bbf94" opacity=".7" transform="rotate(-25 100 180)"/>
+  <ellipse cx="180" cy="120" rx="15" ry="6" fill="#5cb87a" opacity=".7" transform="rotate(-40 180 120)"/>
+  <!-- Hoa hướng dương tươi sáng -->
+  <g transform="translate(250, 50)">
+    <circle cx="0" cy="-14" r="6" fill="#f5c842"/><circle cx="10" cy="-10" r="6" fill="#f5c842"/>
+    <circle cx="14" cy="0" r="6" fill="#f5c842"/><circle cx="10" cy="10" r="6" fill="#f5c842"/>
+    <circle cx="0" cy="14" r="6" fill="#f5c842"/><circle cx="-10" cy="10" r="6" fill="#f5c842"/>
+    <circle cx="-14" cy="0" r="6" fill="#f5c842"/><circle cx="-10" cy="-10" r="6" fill="#f5c842"/>
+    <circle cx="0" cy="0" r="9.5" fill="#5a2800"/>
+  </g>
+  <!-- Hoa đào / hồng nhạt -->
+  <g transform="translate(210, 190)">
+    <circle cx="0" cy="0" r="12" fill="#f8a0b0" opacity=".9"/>
+    <circle cx="0" cy="0" r="7" fill="#fbc4c3"/>
+    <circle cx="0" cy="0" r="3" fill="#b03858"/>
+  </g>
+</svg>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     GRAND SIDE FLORALS (VƯƠN SÂU VỀ PHÍA CHỮ)
+═══════════════════════════════════════════ -->
+
+<!-- CỤM HOA BÊN TRÁI -->
+<div class="fl fl-side-l">
+<svg viewBox="0 0 440 600" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;overflow:visible">
+  <path d="M-20 300 Q120 280 230 220 Q320 180 390 230" stroke="#2d6e42" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M120 280 Q220 320 320 380 Q370 410 410 390" stroke="#38804e" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <path d="M50 290 Q150 160 260 120 Q320 100 370 115" stroke="#38804e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+
+  <!-- Cành lá phượng kép lông chim -->
+  <g opacity=".85">
+    <path d="M160 210 Q220 170 290 185" stroke="#4a9562" stroke-width="1.4" fill="none"/>
+    <ellipse cx="200" cy="188" rx="6" ry="2.5" fill="#5cb87a" transform="rotate(-30 200 188)"/>
+    <ellipse cx="218" cy="180" rx="6" ry="2.5" fill="#7bbf94" transform="rotate(-30 218 180)"/>
+    <ellipse cx="236" cy="176" rx="6" ry="2.5" fill="#5cb87a" transform="rotate(-20 236 176)"/>
+    <ellipse cx="254" cy="176" rx="6" ry="2.5" fill="#7bbf94" transform="rotate(-15 254 176)"/>
+    <ellipse cx="272" cy="180" rx="6" ry="2.5" fill="#5cb87a" transform="rotate(-10 272 180)"/>
+  </g>
+
+  <ellipse cx="210" cy="270" rx="35" ry="14" fill="#3a8553" opacity=".65" transform="rotate(-25 210 270)"/>
+  <ellipse cx="280" cy="210" rx="32" ry="13" fill="#5cb87a" opacity=".7" transform="rotate(15 280 210)"/>
+  <ellipse cx="330" cy="340" rx="34" ry="14" fill="#3a8553" opacity=".65" transform="rotate(35 330 340)"/>
+
+  <!-- HOA PHƯỢNG ĐỎ VĨ LỚN TRÁI -->
+  <g transform="translate(370, 220)">
+    <path d="M0 0 Q-15 -35 -40 -38 Q-30 -15 0 0" fill="#e63946" opacity=".95"/>
+    <path d="M0 0 Q15 -35 40 -38 Q30 -15 0 0" fill="#e63946" opacity=".95"/>
+    <path d="M0 0 Q-38 10 -45 35 Q-18 25 0 0" fill="#d90429" opacity=".95"/>
+    <path d="M0 0 Q38 10 45 35 Q18 25 0 0" fill="#d90429" opacity=".95"/>
+    <path d="M0 0 Q-18 -55 0 -68 Q18 -55 0 0" fill="#ffea79" stroke="#e63946" stroke-width="1.2"/>
+    <circle cx="0" cy="-48" r="2.2" fill="#b51726"/>
+    <circle cx="-5" cy="-42" r="1.8" fill="#b51726"/>
+    <circle cx="5" cy="-42" r="1.8" fill="#b51726"/>
+    <path d="M0 0 Q-12 -25 -25 -45" stroke="#b51726" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="-25" cy="-45" r="2.5" fill="#ffb703"/>
+    <path d="M0 0 Q-5 -30 -8 -52" stroke="#b51726" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="-8" cy="-52" r="2.5" fill="#ffb703"/>
+    <circle cx="0" cy="0" r="5" fill="#9b111e"/>
+  </g>
+
+  <!-- HOA SEN HỒNG -->
+  <g transform="translate(380, 390)">
+    <path d="M0 15 C-25 0 -40 -20 -35 -45 C-15 -35 0 -10 0 15Z" fill="#f28482" opacity=".88"/>
+    <path d="M0 15 C25 0 40 -20 35 -45 C15 -35 0 -10 0 15Z" fill="#f28482" opacity=".88"/>
+    <path d="M0 15 C-8 -20 -8 -50 0 -65 C8 -50 8 -20 0 15Z" fill="#fbc4c3"/>
+    <circle cx="0" cy="-10" r="8" fill="#ffd166"/>
+  </g>
+
+  <!-- Hoa Hướng Dương Lớn -->
+  <g transform="translate(230, 290)">
+    <circle cx="0" cy="-26" r="10" fill="#f5c842"/><circle cx="18" cy="-18" r="10" fill="#f5c842"/>
+    <circle cx="26" cy="0" r="10" fill="#f5c842"/><circle cx="18" cy="18" r="10" fill="#f5c842"/>
+    <circle cx="0" cy="26" r="10" fill="#f5c842"/><circle cx="-18" cy="18" r="10" fill="#f5c842"/>
+    <circle cx="-26" cy="0" r="10" fill="#f5c842"/><circle cx="-18" cy="-18" r="10" fill="#f5c842"/>
+    <circle cx="0" cy="0" r="17" fill="#6a3800"/>
+  </g>
+</svg>
+</div>
+
+<!-- CỤM HOA BÊN PHẢI -->
+<div class="fl fl-side-r">
+<svg viewBox="0 0 440 600" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;overflow:visible;transform:scaleX(-1)">
+  <path d="M-20 300 Q120 280 230 220 Q320 180 390 230" stroke="#2d6e42" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M120 280 Q220 320 320 380 Q370 410 410 390" stroke="#38804e" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <path d="M50 290 Q150 160 260 120 Q320 100 370 115" stroke="#38804e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+
+  <!-- Lá phượng vĩ -->
+  <g opacity=".85">
+    <path d="M160 210 Q220 170 290 185" stroke="#4a9562" stroke-width="1.4" fill="none"/>
+    <ellipse cx="200" cy="188" rx="6" ry="2.5" fill="#5cb87a" transform="rotate(-30 200 188)"/>
+    <ellipse cx="218" cy="180" rx="6" ry="2.5" fill="#7bbf94" transform="rotate(-30 218 180)"/>
+    <ellipse cx="236" cy="176" rx="6" ry="2.5" fill="#5cb87a" transform="rotate(-20 236 176)"/>
+  </g>
+
+  <ellipse cx="210" cy="270" rx="35" ry="14" fill="#3a8553" opacity=".65" transform="rotate(-25 210 270)"/>
+  <ellipse cx="280" cy="210" rx="32" ry="13" fill="#5cb87a" opacity=".7" transform="rotate(15 280 210)"/>
+
+  <!-- HOA PHƯỢNG ĐỎ VĨ LỚN PHẢI -->
+  <g transform="translate(370, 220)">
+    <path d="M0 0 Q-15 -35 -40 -38 Q-30 -15 0 0" fill="#e63946" opacity=".95"/>
+    <path d="M0 0 Q15 -35 40 -38 Q30 -15 0 0" fill="#e63946" opacity=".95"/>
+    <path d="M0 0 Q-38 10 -45 35 Q-18 25 0 0" fill="#d90429" opacity=".95"/>
+    <path d="M0 0 Q38 10 45 35 Q18 25 0 0" fill="#d90429" opacity=".95"/>
+    <path d="M0 0 Q-18 -55 0 -68 Q18 -55 0 0" fill="#ffea79" stroke="#e63946" stroke-width="1.2"/>
+    <circle cx="0" cy="-48" r="2.2" fill="#b51726"/>
+    <path d="M0 0 Q-12 -25 -25 -45" stroke="#b51726" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="-25" cy="-45" r="2.5" fill="#ffb703"/>
+    <circle cx="0" cy="0" r="5" fill="#9b111e"/>
+  </g>
+
+  <!-- Hoa Hồng Nhung Lớn Phải -->
+  <g transform="translate(370, 390)">
+    <circle cx="0" cy="0" r="26" fill="#c1121f" opacity=".92"/>
+    <circle cx="0" cy="0" r="19" fill="#e63946" opacity=".88"/>
+    <circle cx="0" cy="0" r="7" fill="#780000"/>
+  </g>
+
+  <!-- Hoa Hướng Dương Phải -->
+  <g transform="translate(230, 290)">
+    <circle cx="0" cy="-26" r="10" fill="#f5c842"/><circle cx="18" cy="-18" r="10" fill="#f5c842"/>
+    <circle cx="26" cy="0" r="10" fill="#f5c842"/><circle cx="18" cy="18" r="10" fill="#f5c842"/>
+    <circle cx="0" cy="26" r="10" fill="#f5c842"/><circle cx="-18" cy="18" r="10" fill="#f5c842"/>
+    <circle cx="-26" cy="0" r="10" fill="#f5c842"/><circle cx="-18" cy="-18" r="10" fill="#f5c842"/>
+    <circle cx="0" cy="0" r="17" fill="#6a3800"/>
+  </g>
+</svg>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DẢI HOA ĐÁY TRANG
+═══════════════════════════════════════════ -->
+<div class="fl fl-bot">
+<svg viewBox="0 0 1400 110" preserveAspectRatio="xMidYMax meet" width="100%" height="110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0 105 Q120 68 280 54 Q420 40 560 46" stroke="#2d6e42" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <path d="M1400 105 Q1280 68 1120 54 Q980 40 840 46" stroke="#2d6e42" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <path d="M560 46 Q700 18 840 46" stroke="#2d6e42" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+
+  <!-- HOA PHƯỢNG ĐỎ ĐÁY -->
+  <g transform="translate(700, 24)">
+    <path d="M0 0 Q-12 -28 -30 -30 Q-24 -12 0 0" fill="#e63946"/>
+    <path d="M0 0 Q12 -28 30 -30 Q24 -12 0 0" fill="#e63946"/>
+    <path d="M0 0 Q-30 8 -34 26 Q-14 18 0 0" fill="#d90429"/>
+    <path d="M0 0 Q30 8 34 26 Q14 18 0 0" fill="#d90429"/>
+    <path d="M0 0 Q-14 -42 0 -52 Q14 -42 0 0" fill="#ffea79" stroke="#e63946"/>
+    <circle cx="0" cy="-38" r="1.8" fill="#b51726"/>
+    <circle cx="0" cy="0" r="4.5" fill="#7a0d16"/>
+  </g>
+
+  <g transform="translate(460, 40)">
+    <circle cx="0" cy="0" r="16" fill="#f07890" opacity=".9"/>
+    <circle cx="0" cy="0" r="4" fill="#b03858"/>
+  </g>
+  <g transform="translate(940, 40)">
+    <circle cx="0" cy="0" r="16" fill="#f0a070" opacity=".9"/>
+    <circle cx="0" cy="0" r="4" fill="#b06030"/>
+  </g>
+</svg>
+</div>
+
+<!-- ═══ SPARKLES ═══ -->
+<div class="sp" style="width:5px;height:5px;background:#5cb87a;top:10%;left:22%;animation-delay:0s;animation-duration:3.4s"></div>
+<div class="sp" style="width:4px;height:4px;background:#e63946;top:28%;left:15%;animation-delay:1.1s;animation-duration:4.1s"></div>
+<div class="sp" style="width:4px;height:4px;background:#f5c842;top:60%;left:17%;animation-delay:2.2s;animation-duration:3.7s"></div>
+<div class="sp" style="width:5px;height:5px;background:#248277;top:14%;right:22%;animation-delay:1.6s;animation-duration:3.9s"></div>
+<div class="sp" style="width:4px;height:4px;background:#e63946;top:38%;right:15%;animation-delay:2.7s;animation-duration:3.2s"></div>
+
+<!-- ═══════════════════════════════════════════
+     CENTER CONTENT
+═══════════════════════════════════════════ -->
+<main>
+<div class="center">
+
+  <!-- Badge: plain text, NO border -->
+  <div class="badge">
+    <span class="dot"></span>
+    Ngày Nhà Giáo Việt Nam &nbsp;·&nbsp; 20 / 11 / 2025
+    <span class="dot"></span>
+  </div>
+
+  <!-- Floral crown -->
+  <div class="crown">
+    <svg viewBox="0 0 500 148" fill="none">
+      <path d="M250 144 Q222 96 172 76 Q132 61 92 70" stroke="#3d8858" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M250 144 Q278 96 328 76 Q368 61 408 70" stroke="#3d8858" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="197" cy="84" rx="15" ry="6.5" fill="#7bbf94" opacity=".72" transform="rotate(-48 197 84)"/>
+      <ellipse cx="303" cy="84" rx="15" ry="6.5" fill="#7bbf94" opacity=".72" transform="rotate(48 303 84)"/>
+      <!-- center rose -->
+      <g transform="translate(250,48)">
+        <circle cx="0" cy="0" r="23" fill="#e06878" opacity=".9"/>
+        <circle cx="0" cy="0" r="16" fill="#f08090" opacity=".84"/>
+        <circle cx="0" cy="0" r="10" fill="#f8a0b0" opacity=".92"/>
+        <circle cx="0" cy="0" r="6" fill="#b03858"/>
+      </g>
+      <!-- sunflowers -->
+      <g transform="translate(107,65)">
+        <circle cx="0" cy="-13" r="6.5" fill="#f5c842"/><circle cx="9.5" cy="-9.5" r="6.5" fill="#f5c842"/>
+        <circle cx="13" cy="0" r="6.5" fill="#f5c842"/><circle cx="0" cy="13" r="6.5" fill="#f5c842"/>
+        <circle cx="-13" cy="0" r="6.5" fill="#f5c842"/><circle cx="0" cy="0" r="9.5" fill="#5a2800"/>
+      </g>
+      <g transform="translate(393,65)">
+        <circle cx="0" cy="-13" r="6.5" fill="#f5c842"/><circle cx="9.5" cy="-9.5" r="6.5" fill="#f5c842"/>
+        <circle cx="13" cy="0" r="6.5" fill="#f5c842"/><circle cx="0" cy="13" r="6.5" fill="#f5c842"/>
+        <circle cx="-13" cy="0" r="6.5" fill="#f5c842"/><circle cx="0" cy="0" r="9.5" fill="#5a2800"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Ornament -->
+  <div class="ornament">
+    <div class="orn-line"></div>
+    <span class="orn-sym">✦ ✦ ✦</span>
+    <div class="orn-line"></div>
+  </div>
+
+  <!-- TITLE -->
+  <div class="title-wrap">
+    <h1 class="t-main">TỌA ĐÀM<span class="t-date">20 / 11</span></h1>
+  </div>
+
+  <!-- Divider -->
+  <div class="divider">
+    <div class="div-line"></div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2 Q14 9 20 12 Q14 15 12 22 Q10 15 4 12 Q10 9 12 2Z" fill="#248277" opacity=".6"/>
+    </svg>
+    <div class="div-line"></div>
+  </div>
+
+  <!-- Subtitle -->
+  <p class="subtitle">"Tri ân người gieo chữ –<br/>Tôn vinh những người lái đò thầm lặng."</p>
+
+  <!-- Scene: child giving flowers to teacher -->
+  <div class="scene">
+    <!-- left sprig -->
+    <svg width="90" height="110" viewBox="0 0 90 110" fill="none" style="animation:fl 5.5s .5s ease-in-out infinite;margin-right:-8px;align-self:flex-end">
+      <path d="M45 108 Q35 84 32 60 Q28 42 35 22" stroke="#3d8858" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="9" cy="39" rx="12" ry="5" fill="#7bbf94" opacity=".72" transform="rotate(20 9 39)"/>
+      <g transform="translate(35,15)">
+        <circle cx="0" cy="0" r="12" fill="#e06878" opacity=".88"/>
+        <circle cx="0" cy="0" r="8.5" fill="#f08090" opacity=".82"/>
+        <circle cx="0" cy="0" r="3.5" fill="#b03858"/>
+      </g>
+    </svg>
+
+    <!-- CHILD + TEACHER SCENE -->
+    <svg width="clamp(200px,30vw,310px)" height="clamp(140px,21vw,220px)" viewBox="0 0 310 215" fill="none" style="animation:fl 6s ease-in-out infinite;flex-shrink:0">
+      <ellipse cx="155" cy="208" rx="130" ry="9" fill="#a8d8b8" opacity=".35"/>
+      <!-- TEACHER (right) -->
+      <path d="M200 94 Q188 124 185 168 Q198 173 220 171 Q235 167 238 158 Q235 124 225 94Z" fill="#248277" opacity=".92"/>
+      <rect x="205" y="82" width="13" height="15" rx="6.5" fill="#f5c8a0"/>
+      <circle cx="211" cy="70" r="17" fill="#f5c8a0"/>
+      <ellipse cx="211" cy="55" rx="13" ry="9.5" fill="#5a3010"/>
+      <circle cx="205" cy="70" r="2" fill="#8b5e3c"/>
+      <circle cx="217" cy="70" r="2" fill="#8b5e3c"/>
+      <path d="M205 76 Q211 80 217 76" stroke="#c0705a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M200 104 Q185 109 178 118" stroke="#f5c8a0" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M200 104 Q185 109 178 118" stroke="#248277" stroke-width="5.5" fill="none" stroke-linecap="round" opacity=".8"/>
+      <circle cx="176" cy="120" r="5.5" fill="#f5c8a0"/>
+      <ellipse cx="195" cy="171" rx="11" ry="4.5" fill="#1a5c40"/>
+      <ellipse cx="219" cy="172" rx="11" ry="4.5" fill="#1a5c40"/>
+
+      <!-- CHILD (left) -->
+      <rect x="110" y="155" width="10" height="20" rx="4.5" fill="#e8d0a8"/>
+      <rect x="127" y="155" width="10" height="20" rx="4.5" fill="#e8d0a8"/>
+      <ellipse cx="115" cy="176" rx="9" ry="4" fill="#c05858"/>
+      <ellipse cx="132" cy="176" rx="9" ry="4" fill="#c05858"/>
+      <path d="M108 104 Q100 130 102 158 Q116 163 134 161 Q147 157 148 149 Q146 125 138 104Z" fill="#f07890" opacity=".92"/>
+      <rect x="114" y="93" width="11" height="13" rx="5.5" fill="#f5c8a0"/>
+      <circle cx="119" cy="80" r="16" fill="#f5c8a0"/>
+      <ellipse cx="108" cy="69" rx="8.5" ry="11" fill="#a05a20" transform="rotate(-10 108 69)"/>
+      <ellipse cx="130" cy="69" rx="8.5" ry="11" fill="#a05a20" transform="rotate(10 130 69)"/>
+      <circle cx="104" cy="62" r="4.5" fill="#f07890"/>
+      <circle cx="134" cy="62" r="4.5" fill="#f07890"/>
+      <circle cx="113" cy="80" r="1.8" fill="#8b5e3c"/>
+      <circle cx="125" cy="80" r="1.8" fill="#8b5e3c"/>
+      <path d="M113 86 Q119 90.5 125 86" stroke="#c0705a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M138 112 Q151 104 160 100" stroke="#f5c8a0" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M138 112 Q151 104 160 100" stroke="#f07890" stroke-width="5.5" fill="none" stroke-linecap="round" opacity=".8"/>
+
+      <!-- BOUQUET -->
+      <path d="M162 98 Q166 112 170 122" stroke="#3d8858" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="164" cy="112" rx="8" ry="3.5" fill="#7bbf94" opacity=".8" transform="rotate(28 164 112)"/>
+      <ellipse cx="162" cy="123" rx="5.5" ry="2.8" fill="#f8a8d8" transform="rotate(-15 162 123)"/>
+      <circle cx="166" cy="124" r="2.8" fill="#e870a8"/>
+      <g transform="translate(163,91)">
+        <circle cx="0" cy="0" r="10" fill="#e63946" opacity=".95"/>
+        <circle cx="0" cy="0" r="6" fill="#f94144"/>
+        <circle cx="0" cy="0" r="2.8" fill="#780000"/>
+      </g>
+      <text x="182" y="84" font-size="10" fill="#e63946" opacity=".8">♥</text>
+      <text x="143" y="74" font-size="8" fill="#f07890" opacity=".6">♥</text>
+    </svg>
+
+    <!-- right sprig -->
+    <svg width="90" height="110" viewBox="0 0 90 110" fill="none" style="animation:fl 5.2s 1s ease-in-out infinite;margin-left:-8px;align-self:flex-end;transform:scaleX(-1)">
+      <path d="M45 108 Q35 84 32 60 Q28 42 35 22" stroke="#3d8858" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="9" cy="39" rx="12" ry="5" fill="#7bbf94" opacity=".72" transform="rotate(20 9 39)"/>
+      <g transform="translate(35,15)">
+        <circle cx="0" cy="-15" r="7" fill="#f5c842"/><circle cx="14" cy="0" r="7" fill="#f5c842"/>
+        <circle cx="0" cy="14" r="7" fill="#f5c842"/><circle cx="-14" cy="0" r="7" fill="#f5c842"/>
+        <circle cx="0" cy="0" r="9" fill="#5a2800"/>
+      </g>
+    </svg>
+  </div>
+
+</div>
+</main>
+
+<script>
+/* ── PARTICLES ─────────────────────── */
+(function(){
+  const cv=document.getElementById('particleCanvas'),cx=cv.getContext('2d');
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let W,H,pts=[];
+  function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+  rs();window.addEventListener('resize',rs);
+  const C=[[93,200,130],[36,130,119],[230,57,70],[245,200,66],[168,218,181]];
+  function mk(){return{x:Math.random()*W,y:Math.random()*H,r:.8+Math.random()*2.2,a:.1+Math.random()*.6,da:(.004+Math.random()*.01)*(Math.random()<.5?1:-1),dx:(-.1+Math.random()*.2),dy:(-.06+Math.random()*.12),c:C[Math.floor(Math.random()*C.length)],ph:Math.random()*Math.PI*2}}
+  pts=Array.from({length:Math.min(Math.floor(W*H/12000),85)},mk);
+  function draw(ts){cx.clearRect(0,0,W,H);const t=ts*.001;pts.forEach(p=>{p.a+=p.da;if(p.a>=.72||p.a<=.05)p.da*=-1;p.x+=p.dx+Math.sin(t+p.ph)*.12;p.y+=p.dy+Math.cos(t*.7+p.ph)*.09;if(p.x<-5)p.x=W+5;if(p.x>W+5)p.x=-5;if(p.y<-5)p.y=H+5;if(p.y>H+5)p.y=-5;cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=`rgba(${p.c[0]},${p.c[1]},${p.c[2]},${p.a.toFixed(3)})`;cx.fill();if(p.r>1.8){const g=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*5);g.addColorStop(0,`rgba(${p.c[0]},${p.c[1]},${p.c[2]},${(p.a*.28).toFixed(3)})`);g.addColorStop(1,'rgba(0,0,0,0)');cx.beginPath();cx.arc(p.x,p.y,p.r*5,0,Math.PI*2);cx.fillStyle=g;cx.fill()}});requestAnimationFrame(draw)}
+  requestAnimationFrame(draw);
+})();
+
+/* ── FALLING PETALS ── */
+(function(){
+  const cv=document.getElementById('petalCanvas'),cx=cv.getContext('2d');
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let W,H,pts=[];
+  function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}
+  rs();window.addEventListener('resize',rs);
+  const C=['#e63946','#d90429','#f94144','#ffea79','#f08090','#f8a0b0','#78d090','#a8e8c0','#f5c842','#c8b0e8','#fff8e0'];
+  function mk(){return{x:-60+Math.random()*(W+120),y:-200+Math.random()*-100,vx:-.5+Math.random(),vy:.7+Math.random()*1.6,rot:Math.random()*Math.PI*2,vrot:-.014+Math.random()*.028,rx:4+Math.random()*9,ry:3+Math.random()*6,c:C[Math.floor(Math.random()*C.length)],a:.4+Math.random()*.55,sw:.004+Math.random()*.011,swO:Math.random()*Math.PI*2}}
+  const n=Math.min(Math.floor(W/10),75);
+  pts=Array.from({length:n},()=>{const p=mk();p.y=Math.random()*H;return p});
+  function draw(ts){cx.clearRect(0,0,W,H);const t=ts*.001;pts.forEach(p=>{p.x+=p.vx+Math.sin(t*p.sw+p.swO)*.5;p.y+=p.vy;p.rot+=p.vrot;if(p.y>H+30||p.x<-90||p.x>W+90)Object.assign(p,mk());cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.globalAlpha=p.a;cx.beginPath();cx.ellipse(0,0,p.rx,p.ry,0,0,Math.PI*2);cx.fillStyle=p.c;cx.fill();cx.beginPath();cx.ellipse(-p.rx*.2,-p.ry*.2,p.rx*.38,p.ry*.32,-.5,0,Math.PI*2);cx.fillStyle='rgba(255,255,255,.28)';cx.fill();cx.restore()});requestAnimationFrame(draw)}
+  requestAnimationFrame(draw);
+})();
+
+/* ── FULLSCREEN ─────────────────────── */
+(function(){
+  const btn=document.getElementById('fsBtn'),icon=document.getElementById('fsIcon');
+  const ep='M3 7V3h4M17 3h4v4M21 17v4h-4M7 21H3v-4',xp='M5 9H3V3h6v2M19 9h2V3h-6v2M5 15H3v6h6v-2M19 15h2v6h-6v-2';
+  btn.addEventListener('click',()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});icon.querySelector('path').setAttribute('d',xp)}else{document.exitFullscreen().catch(()=>{});icon.querySelector('path').setAttribute('d',ep)}});
+  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)icon.querySelector('path').setAttribute('d',ep)});
+})();
+
+/* ── MUSIC PLAYLIST & VOLUME CONTROLLER ──────── */
+(function(){
+  const bgAudio   = document.getElementById('bgAudio');
+  const musicBtn  = document.getElementById('musicBtn');
+  const volBtn    = document.getElementById('volBtn');
+  const volIcon   = document.getElementById('volIcon');
+  const volSlider = document.getElementById('volSlider');
+  const volText   = document.getElementById('volText');
+
+  // Danh sách 2 bài hát do người dùng thêm vào thư mục:
+  const playlist = [
+    {
+      title: "Ngày Đầu Tiên Đi Học",
+      src: "NGÀY ĐẦU TIÊN ĐI HỌC - ĐÔNG HÙNG ft. BẢO TRÂM _ THAY LỜI TRI ÂN 2021 - (320 Kbps).mp3"
+    },
+    {
+      title: "Người Gieo Mầm Xanh",
+      src: "NGƯỜI GIEO MẦM XANH - HỨA KIM TUYỀN x HOÀNG DŨNG (OFFICIAL MV) - (320 Kbps).mp3"
+    }
+  ];
+
+  let currentIdx = 0;
+  let isPlaying = false;
+  let prevVolume = 0.8;
+
+  // Khởi tạo âm lượng mặc định 80%
+  bgAudio.volume = 0.8;
+
+  function loadTrack(idx) {
+    currentIdx = idx;
+    const track = playlist[idx];
+    bgAudio.src = encodeURI(track.src);
+  }
+
+  // Load bài đầu tiên: "Ngày đầu tiên đi học"
+  loadTrack(0);
+
+  // Khi bài "Ngày đầu tiên đi học" đạt đúng 4:04 (244 giây), chuyển ngay sang bài 2
+  bgAudio.addEventListener('timeupdate', () => {
+    if (currentIdx === 0 && bgAudio.currentTime >= 244) {
+      loadTrack(1); // Chuyển sang "Người gieo mầm xanh"
+      bgAudio.play().catch(()=>{});
+    }
+  });
+
+  // Xử lý khi kết thúc bài (backup hoặc khi kết thúc bài 2):
+  // Bài 1 ("Ngày đầu tiên") -> chuyển sang Bài 2 ("Người gieo mầm xanh")
+  // Bài 2 -> tiếp tục lặp lại bài 2 mãi mãi!
+  bgAudio.addEventListener('ended', () => {
+    if (currentIdx === 0) {
+      loadTrack(1); // Chuyển sang "Người gieo mầm xanh"
+      bgAudio.play().catch(()=>{});
+    } else {
+      // Đang ở bài 2 -> cứ lặp lại bài 2
+      bgAudio.currentTime = 0;
+      bgAudio.play().catch(()=>{});
+    }
+  });
+
+  // Nút Play / Pause
+  musicBtn.addEventListener('click', () => {
+    if (bgAudio.paused) {
+      bgAudio.play().then(() => {
+        isPlaying = true;
+        musicBtn.classList.add('playing');
+      }).catch(err => {
+        console.warn("Lỗi phát audio:", err);
+      });
+    } else {
+      bgAudio.pause();
+      isPlaying = false;
+      musicBtn.classList.remove('playing');
+    }
+  });
+
+  // Tăng giảm âm lượng qua thanh trượt Slider
+  volSlider.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    bgAudio.volume = val;
+    bgAudio.muted = false;
+    updateVolUI(val);
+  });
+
+  // Nút Mute / Unmute
+  volBtn.addEventListener('click', () => {
+    if (bgAudio.muted || bgAudio.volume === 0) {
+      const restore = prevVolume > 0 ? prevVolume : 0.8;
+      bgAudio.muted = false;
+      bgAudio.volume = restore;
+      volSlider.value = restore;
+      updateVolUI(restore);
+    } else {
+      prevVolume = bgAudio.volume;
+      bgAudio.muted = true;
+      bgAudio.volume = 0;
+      volSlider.value = 0;
+      updateVolUI(0);
+    }
+  });
+
+  function updateVolUI(vol) {
+    volText.textContent = Math.round(vol * 100) + '%';
+    if (vol === 0) {
+      // Icon mute
+      volIcon.innerHTML = `
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      `;
+    } else if (vol < 0.5) {
+      // Icon volume low
+      volIcon.innerHTML = `
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      `;
+    } else {
+      // Icon volume high
+      volIcon.innerHTML = `
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      `;
+    }
+  }
+})();
+
+/* ── PARALLAX ───────────────────────── */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  let tx=0,ty=0,cx2=0,cy2=0;
+  const sL=document.querySelector('.fl-side-l'), sR=document.querySelector('.fl-side-r');
+  const tl=document.querySelector('.fl-tl'),tr=document.querySelector('.fl-tr');
+  document.addEventListener('mousemove',e=>{tx=(e.clientX/innerWidth-.5)*2;ty=(e.clientY/innerHeight-.5)*2});
+  function tick(){cx2+=(tx-cx2)*.05;cy2+=(ty-cy2)*.05;const s=8;
+    if(sL){sL.style.transform=`translateY(calc(-50% + ${cy2*s*.3}px)) translateX(${cx2*s*.4}px)`}
+    if(sR){sR.style.transform=`translateY(calc(-50% + ${cy2*s*.3}px)) translateX(${-cx2*s*.4}px)`}
+    if(tl){tl.style.marginLeft=`${cx2*s*.5}px`;tl.style.marginTop=`${cy2*s*.4}px`}
+    if(tr){tr.style.marginRight=`${-cx2*s*.5}px`;tr.style.marginTop=`${cy2*s*.4}px`}
+    requestAnimationFrame(tick)}
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
