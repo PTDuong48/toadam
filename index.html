@@ -261,13 +261,65 @@ body{
   50%{filter:drop-shadow(0 2px 24px rgba(29,100,65,.55))}
 }
 .t-date{
-  display:block;font-family:'Lora',serif;
-  font-size:clamp(1.15rem,3.2vw,2.15rem);
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+  gap:6px 14px;margin-top:6px;
+  font-family:'Lora',serif;
+  font-size:clamp(1.2rem,3.4vw,2.25rem);
   font-style:italic;font-weight:500;letter-spacing:.03em;
-  margin-top:6px;
-  background:linear-gradient(135deg,#248277 0%,#3ec9a7 50%,#248277 100%);
+  background:linear-gradient(135deg,#1b6e4e 0%,#248277 45%,#3ec9a7 85%,#248277 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 2px 8px rgba(36,130,119,.35));
+  filter:drop-shadow(0 2px 10px rgba(36,130,119,.3));
+}
+.t-date .t-event-label{
+  white-space:nowrap;
+}
+.t-date .t-num{
+  font-family:'Playfair Display',serif;
+  font-style:normal;font-weight:700;
+  letter-spacing:.06em;
+  font-size:1.16em;
+  background:linear-gradient(135deg,#184e34 0%,#2d9a62 50%,#3ec9a7 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* ── BIỂU TƯỢNG TRI ÂN: SÁCH MỞ & BÚT MÁY ─── */
+.edu-art{
+  position:fixed;
+  z-index:15;
+  pointer-events:none;
+  filter:drop-shadow(0 6px 20px rgba(24,78,52,0.18));
+  transition:transform .3s ease;
+}
+.edu-art svg{
+  width:clamp(130px,14vw,210px);
+  height:auto;
+  display:block;
+}
+.edu-art-left{
+  left:clamp(16px,7.5vw,140px);
+  bottom:clamp(30px,6vh,75px);
+  animation:flEduL 7s ease-in-out infinite,up .9s .75s ease both;
+}
+.edu-art-right{
+  right:clamp(16px,7.5vw,140px);
+  bottom:clamp(30px,6vh,75px);
+  animation:flEduR 7.4s .6s ease-in-out infinite,up .9s .8s ease both;
+}
+@keyframes flEduL{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-8px) rotate(-1.2deg)}
+}
+@keyframes flEduR{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-8px) rotate(1.2deg)}
+}
+@media(max-width:960px){
+  .edu-art-left{left:10px;bottom:55px}
+  .edu-art-right{right:10px;bottom:55px}
+  .edu-art svg{width:clamp(110px,16vw,150px)}
+}
+@media(max-width:680px){
+  .edu-art{opacity:.4;transform:scale(.8)}
 }
 
 /* Divider */
@@ -652,6 +704,181 @@ body{
 <div class="sp" style="width:4px;height:4px;background:#e63946;top:38%;right:15%;animation-delay:2.7s;animation-duration:3.2s"></div>
 
 <!-- ═══════════════════════════════════════════
+     BIỂU TƯỢNG TRI ÂN: SÁCH MỞ & BÚT MÁY (2 BÊN KHOẢNG TRỐNG)
+═══════════════════════════════════════════ -->
+<!-- GÓC DƯỚI BÊN TRÁI: QUYỂN SÁCH MỞ & BÚT MÁY MẠ VÀNG -->
+<div class="edu-art edu-art-left" title="Tri ân người gieo chữ - Quyển sách mở & Bút máy">
+<svg viewBox="0 0 220 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bóng đổ nhẹ nhàng dưới nền sách -->
+  <ellipse cx="110" cy="152" rx="88" ry="12" fill="#2d6e42" opacity=".18"/>
+  <ellipse cx="110" cy="150" rx="72" ry="8" fill="#1b4332" opacity=".15"/>
+
+  <!-- Cành lá xanh nhỏ đỡ phía sau sách -->
+  <g opacity=".8">
+    <path d="M40 148 Q20 135 15 115" stroke="#3d8858" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="24" cy="132" rx="10" ry="4.5" fill="#7bbf94" transform="rotate(-30 24 132)"/>
+    <ellipse cx="16" cy="118" rx="9" ry="4" fill="#5cb87a" transform="rotate(-50 16 118)"/>
+    <circle cx="15" cy="112" r="4.5" fill="#f07890"/>
+  </g>
+
+  <!-- Bìa sách cứng màu xanh rêu sang trọng (Hardcover Forest Green) -->
+  <path d="M110 142 C78 138 38 145 18 136 L16 58 C38 67 78 60 110 64 Z" fill="#164d2d"/>
+  <path d="M110 142 C142 138 182 145 202 136 L204 58 C182 67 142 60 110 64 Z" fill="#164d2d"/>
+  <!-- Viền chỉ vàng mạ bìa sách (Gilded borders) -->
+  <path d="M16 58 L18 136" stroke="#d4af37" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M204 58 L202 136" stroke="#d4af37" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M18 136 Q110 146 202 136" stroke="#d4af37" stroke-width="1.2" fill="none"/>
+
+  <!-- Độ dày các trang giấy (Paper thickness / page edges) -->
+  <path d="M19 133 C40 142 78 136 110 139 L110 132 C78 129 40 135 21 126 Z" fill="#e2d6be"/>
+  <path d="M201 133 C180 142 142 136 110 139 L110 132 C142 129 180 135 199 126 Z" fill="#e2d6be"/>
+
+  <!-- Trang sách mở uốn lượn mềm mại bên trái (Left Open Page) -->
+  <path d="M110 132 C78 127 38 133 22 123 L20 46 C38 56 78 50 110 54 Z" fill="#fcf9ee"/>
+  <!-- Trang sách mở bên phải (Right Open Page) -->
+  <path d="M110 132 C142 127 182 133 198 123 L200 46 C182 56 142 50 110 54 Z" fill="#fffdf7"/>
+
+  <!-- Sống sách / gáy sách uốn cong tạo chiều sâu -->
+  <path d="M109 54 Q110 93 109 132 Q111 93 111 54 Z" fill="#cfc4ab"/>
+  <path d="M110 54 L110 132" stroke="#b5a78c" stroke-width="1" opacity=".7"/>
+
+  <!-- Dòng chữ thơ tri ân thầy cô mềm mại như nét mực (Poetic text lines) -->
+  <line x1="36" y1="68" x2="94" y2="65" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+  <line x1="34" y1="81" x2="96" y2="78" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+  <line x1="36" y1="94" x2="92" y2="91" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+  <line x1="38" y1="107" x2="76" y2="104" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+
+  <line x1="126" y1="65" x2="184" y2="68" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+  <line x1="124" y1="78" x2="186" y2="81" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+  <line x1="126" y1="91" x2="182" y2="94" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+  <line x1="126" y1="104" x2="162" y2="107" stroke="#3d8858" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+
+  <!-- Dải ruy băng lụa đỏ đánh dấu trang (Silk Ribbon Bookmark) -->
+  <path d="M110 54 Q116 95 106 136 Q100 152 107 165 L116 160 L113 136 Q118 95 112 54 Z" fill="#d90429" opacity=".95"/>
+
+  <!-- CÂY BÚT MÁY MẠ VÀNG NẰM NGHIÊNG DUYÊN DÁNG (Golden Fountain Pen) -->
+  <g transform="translate(138, 78) rotate(32)">
+    <!-- Bóng cây bút -->
+    <rect x="-4" y="2" width="8" height="68" rx="3.5" fill="#000" opacity=".18"/>
+    <!-- Thân bút máy sơn mài xanh ngọc (Teal / Emerald lacquer barrel) -->
+    <rect x="-4" y="0" width="8" height="64" rx="3.5" fill="#184e34"/>
+    <!-- Vòng kim loại mạ vàng điểm xuyết (Gold Accent Rings) -->
+    <rect x="-4.5" y="16" width="9" height="3" fill="#f5c842"/>
+    <rect x="-4.5" y="48" width="9" height="2" fill="#f5c842"/>
+    <!-- Cài bút mạ vàng (Gold Pen Clip) -->
+    <path d="M2 18 L4 18 L3 42 L2 42 Z" fill="#ffd166"/>
+    <circle cx="2.5" cy="42" r="1.5" fill="#ffd166"/>
+    <!-- Cổ bút máy (Pen Section) -->
+    <polygon points="-3,0 3,0 2.2,-9 -2.2,-9" fill="#2d3748"/>
+    <rect x="-2.5" y="-10.5" width="5" height="1.8" fill="#f5c842"/>
+    <!-- Ngòi bút máy vàng chạm khắc (Crafted Gold Nib) -->
+    <path d="M-2.2,-10.5 L2.2,-10.5 L1.8,-18 Q0,-25 0,-27 Q0,-25 -1.8,-18 Z" fill="#ffd166" stroke="#b58d18" stroke-width=".6"/>
+    <!-- Rãnh dẫn mực và lỗ thông khí (Breather hole & ink slit) -->
+    <line x1="0" y1="-10.5" x2="0" y2="-25" stroke="#7a5500" stroke-width=".6"/>
+    <circle cx="0" cy="-18" r=".8" fill="#7a5500"/>
+  </g>
+
+  <!-- Đốm sáng lấp lánh như nguồn sáng tri thức (Wisdom sparkles) -->
+  <g transform="translate(142, 42)">
+    <path d="M0 -7 Q1 -1 7 0 Q1 1 0 7 Q-1 1 -7 0 Q-1 -1 0 -7 Z" fill="#ffd166" opacity=".85"/>
+    <circle cx="0" cy="0" r="1.5" fill="#fff"/>
+  </g>
+  <g transform="translate(68, 44)">
+    <path d="M0 -5 Q1 -1 5 0 Q1 1 0 5 Q-1 1 -5 0 Q-1 -1 0 -5 Z" fill="#5cb87a" opacity=".7"/>
+  </g>
+</svg>
+</div>
+
+<!-- GÓC DƯỚI BÊN PHẢI: CHỒNG SÁCH TRI ÂN, BÌNH MỰC & BÚT MÁY -->
+<div class="edu-art edu-art-right" title="Tôn vinh người lái đò - Chồng sách tri ân, Bình mực & Bút máy">
+<svg viewBox="0 0 220 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bóng đổ chồng sách -->
+  <ellipse cx="112" cy="154" rx="88" ry="12" fill="#2d6e42" opacity=".18"/>
+  <ellipse cx="112" cy="151" rx="72" ry="8" fill="#1b4332" opacity=".15"/>
+
+  <!-- CUỐN 1 (DƯỚI CÙNG): Bìa xanh đậm Forest Green dày dặn -->
+  <rect x="30" y="128" width="138" height="23" rx="4" fill="#13432b"/>
+  <!-- Gân sách mạ vàng cổ điển -->
+  <line x1="38" y1="139" x2="152" y2="139" stroke="#d4af37" stroke-width="1.8" stroke-dasharray="10 4"/>
+  <rect x="36" y="132" width="3" height="15" fill="#f5c842"/>
+  <rect x="156" y="132" width="3" height="15" fill="#f5c842"/>
+  <!-- Mép trang giấy ngà vàng -->
+  <polygon points="168,128 178,116 42,116 30,128" fill="#ede3cf"/>
+  <line x1="42" y1="116" x2="178" y2="116" stroke="#c4b69c" stroke-width="1"/>
+
+  <!-- CUỐN 2 (Ở GIỮA): Bìa đỏ rượu vang Burgundy tri ân -->
+  <rect x="38" y="105" width="128" height="21" rx="3.5" fill="#851928"/>
+  <line x1="46" y1="115" x2="148" y2="115" stroke="#f5c842" stroke-width="1.5"/>
+  <polygon points="166,105 174,94 48,94 38,105" fill="#faf5e8"/>
+  <!-- Dải ruy băng rủ từ cuốn sách giữa -->
+  <path d="M152 112 Q158 135 150 152 L157 148 L155 112 Z" fill="#e63946"/>
+
+  <!-- CUỐN 3 (TRÊN CÙNG): Bìa xanh ngọc Teal sang trọng -->
+  <rect x="46" y="84" width="118" height="19" rx="3.5" fill="#1f7a63"/>
+  <line x1="54" y1="93" x2="148" y2="93" stroke="#ffd166" stroke-width="1.4" stroke-dasharray="6 3"/>
+  <polygon points="164,84 171,74 55,74 46,84" fill="#fffdf8"/>
+
+  <!-- CUỘN THƯ TRI ÂN / BẰNG KHEN (Graduation / Gratitude Scroll) nằm trên sách -->
+  <g transform="translate(62, 58) rotate(-8)">
+    <rect x="0" y="0" width="85" height="18" rx="9" fill="#fcf7ea" stroke="#d5c8aa" stroke-width="1"/>
+    <ellipse cx="6" cy="9" rx="5.5" ry="8" fill="#ebe0c8"/>
+    <!-- Dải ruy băng đỏ thắt nơ cuộn thư -->
+    <rect x="38" y="-1" width="9" height="20" rx="2" fill="#d90429"/>
+    <!-- Nơ đỏ -->
+    <circle cx="42.5" cy="9" r="4" fill="#b51726"/>
+    <path d="M42.5 9 Q35 18 30 24" stroke="#d90429" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M42.5 9 Q50 18 55 24" stroke="#d90429" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- BÌNH MỰC THỦY TINH CỔ ĐIỂN (Vintage Glass Inkwell) -->
+  <g transform="translate(158, 102)">
+    <!-- Bóng bình mực -->
+    <ellipse cx="14" cy="46" rx="16" ry="5" fill="#000" opacity=".2"/>
+    <!-- Thân bình mực lục giác thủy tinh dày -->
+    <path d="M3 42 L6 22 Q14 18 22 22 L25 42 Q14 46 3 42 Z" fill="#143e2b" opacity=".88"/>
+    <!-- Ánh sáng bóng trên thành thủy tinh -->
+    <path d="M7 24 L5 40" stroke="#74c69d" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>
+    <!-- Mực sóng sánh phản chiếu vàng champagne -->
+    <ellipse cx="14" cy="30" rx="7" ry="3" fill="#52b788" opacity=".5"/>
+    <!-- Cổ bình mực & nắp mạ vàng -->
+    <rect x="9" y="16" width="10" height="6" rx="1.5" fill="#d4af37"/>
+    <rect x="7" y="13" width="14" height="4" rx="2" fill="#f5c842"/>
+  </g>
+
+  <!-- CÂY BÚT MÁY ĐỨNG CẮM TRONG BÌNH MỰC (Fountain Pen In Inkwell) -->
+  <g transform="translate(172, 85) rotate(-22)">
+    <!-- Cán bút máy sơn mài xanh sẫm -->
+    <rect x="-3" y="-55" width="6" height="65" rx="3" fill="#13432b"/>
+    <!-- Đai vàng nắp bút & thân bút -->
+    <rect x="-3.5" y="-35" width="7" height="3" fill="#ffd166"/>
+    <rect x="-3.5" y="-12" width="7" height="2" fill="#ffd166"/>
+    <!-- Cài bút vàng -->
+    <path d="M1.5 -35 L3 -35 L2.5 -18 L1.5 -18 Z" fill="#ffd166"/>
+    <!-- Ngòi bút cắm xuống mực -->
+    <polygon points="-2,10 2,10 1.5,18 0,22 -1.5,18" fill="#f5c842"/>
+    <!-- Đỉnh nắp bút viền vàng -->
+    <circle cx="0" cy="-55" r="3" fill="#ffd166"/>
+  </g>
+
+  <!-- Nhành hoa đào / hoa phượng rơi nhẹ nhàng bên sách -->
+  <g transform="translate(35, 142)">
+    <circle cx="0" cy="0" r="8" fill="#f07890" opacity=".88"/>
+    <circle cx="0" cy="0" r="5" fill="#f8a0b0"/>
+    <circle cx="0" cy="0" r="2" fill="#b03858"/>
+  </g>
+
+  <!-- Ánh sáng tri thức lấp lánh (Sparkles) -->
+  <g transform="translate(182, 38)">
+    <path d="M0 -6 Q1 -1 6 0 Q1 1 0 6 Q-1 1 -6 0 Q-1 -1 0 -6 Z" fill="#ffd166" opacity=".9"/>
+    <circle cx="0" cy="0" r="1.2" fill="#fff"/>
+  </g>
+  <g transform="translate(54, 48)">
+    <path d="M0 -4 Q1 -1 4 0 Q1 1 0 4 Q-1 1 -4 0 Q-1 -1 0 -4 Z" fill="#2d9a62" opacity=".7"/>
+  </g>
+</svg>
+</div>
+
+<!-- ═══════════════════════════════════════════
      CENTER CONTENT
 ═══════════════════════════════════════════ -->
 <main>
@@ -694,7 +921,11 @@ body{
 
   <!-- TITLE -->
   <div class="title-wrap">
-    <h1 class="t-main">TỌA ĐÀM<span class="t-date">Ngày Nhà Giáo Việt Nam 20 / 11</span></h1>
+    <h1 class="t-main">TỌA ĐÀM</h1>
+    <div class="t-date">
+      <span class="t-event-label">Ngày Nhà Giáo Việt Nam</span>
+      <span class="t-num">20 / 11</span>
+    </div>
   </div>
 
   <!-- Divider -->
@@ -725,6 +956,15 @@ body{
     <!-- CHILD + TEACHER SCENE -->
     <svg width="clamp(200px,30vw,310px)" height="clamp(140px,21vw,220px)" viewBox="0 0 310 215" fill="none" style="animation:fl 6s ease-in-out infinite;flex-shrink:0">
       <ellipse cx="155" cy="208" rx="130" ry="9" fill="#a8d8b8" opacity=".35"/>
+      <!-- Mini open notebook & fountain pen on grass -->
+      <g transform="translate(155, 198)">
+        <path d="M0 6 C-11 3 -22 5 -27 2 L-25 -4 C-20 -2 -11 -4 0 -2 Z" fill="#fffdf5" stroke="#3d8858" stroke-width=".6"/>
+        <path d="M0 6 C11 3 22 5 27 2 L25 -4 C20 -2 11 -4 0 -2 Z" fill="#fcf9ee" stroke="#3d8858" stroke-width=".6"/>
+        <line x1="0" y1="-2" x2="0" y2="6" stroke="#b5a78c" stroke-width=".8"/>
+        <path d="M0 -2 Q2 3 0 8 L2 7 L1 -2 Z" fill="#d90429"/>
+        <rect x="4" y="0" width="16" height="2" rx="1" fill="#184e34" transform="rotate(-15 4 0)"/>
+        <polygon points="21,-3 25,-4 22,-1" fill="#f5c842"/>
+      </g>
       <!-- TEACHER (right) -->
       <path d="M200 94 Q188 124 185 168 Q198 173 220 171 Q235 167 238 158 Q235 124 225 94Z" fill="#248277" opacity=".92"/>
       <rect x="205" y="82" width="13" height="15" rx="6.5" fill="#f5c8a0"/>
